@@ -1,11 +1,11 @@
 pipeline {
     agent any 
     tools {
-        jdk 'jdk'
+
         nodejs 'node'
     }
     environment  {
-        SCANNER_HOME = tool 'sonar-scanner'
+        SCANNER_HOME = tool 'sonar'
     }
     stages {
         stage('Cleaning Workspace') {
@@ -15,7 +15,7 @@ pipeline {
         }
         stage('Checkout from Git') {
             steps {
-                git credentialsId: 'github-cred', url: 'https://github.com/PrathmeshAdhav2006/End-To-End-DevOps.git'
+                git branch: 'main', credentialsId: 'github-cred', url: 'https://github.com/PrathmeshAdhav2006/End-To-End-DevOps.git'
             }
         }
         stage('Sonarqube Analysis') {
@@ -74,23 +74,18 @@ pipeline {
             }
         }
         stage('Checkout Code') {
-            steps {
-                git credentialsId: 'github-cred', url: 'https://github.com/PrathmeshAdhav2006/End-To-End-DevOps.git'
+             steps {
+                git branch: 'main', credentialsId: 'github-cred', url: 'https://github.com/PrathmeshAdhav2006/End-To-End-DevOps.git'
             }
         }
         stage('Update Deployment file') {
-            environment {
+            environment {git
                 GIT_REPO_NAME = "End-To-End-DevOps"
+                GIT_USER_NAME = "PrathmeshAdhav2006"
             }
             steps {
                 dir('Kubernetes-Manifests-file/Backend') {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'github-cred',
-                            usernameVariable: 'GIT_USER_NAME',
-                            passwordVariable: 'GITHUB_TOKEN'
-                        )
-                    ]) {
+                    withCredentials([string(credentialsId: 'github-cred', variable: 'GITHUB_TOKEN')]) {
                         sh '''
                             git config user.email "adhavprathmesh972@gmail.com"
                             git config user.name "PrathmeshAdhav2006"
