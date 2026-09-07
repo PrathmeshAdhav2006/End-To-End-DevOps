@@ -11,7 +11,7 @@ metadata:
 spec:
   ingressClassName: alb
   rules:
-    - host: prathmeshadhavdevops.online
+    - host: www.prathmeshadhavdevops.online
       http:
         paths:
           - path: /api
