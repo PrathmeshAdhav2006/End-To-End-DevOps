@@ -66,9 +66,13 @@ pipeline {
         }
     
         
-        stage("TRIVY Image Scan") {
-            steps {
-                sh 'trivy image prathmeshadhav2006/frontend-app:${BUILD_NUMBER} > trivyimage.txt' 
+       stage("TRIVY Image Scan") {
+                steps {
+                    script {
+                        withCredentials([usernamePassword(credentialsId: 'dockerhub-cred', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                            sh 'trivy image $DOCKER_USER/frontend-app:${BUILD_NUMBER} > trivyimage.txt'
+                    }
+                }
             }
         }
         stage('Checkout Code') {
@@ -79,7 +83,7 @@ pipeline {
         stage('Update Deployment file') {
             environment {
                 GIT_REPO_NAME = "End-To-End-DevOps"
-                GIT_USER_NAME = "PrathmeshAdhav2006"
+
             }
             steps {
                 dir('Kubernetes-Manifests-file/Frontend') {
@@ -99,7 +103,7 @@ pipeline {
                             imageTag=$(grep -oP '(?<=frontend:)[^ ]+' deployment.yaml)
                             echo $imageTag
 
-                            sed -i "s/${imageTag}/${BUILD_NUMBER}/" deployment.yaml
+                            sed -i "s/frontend:${imageTag}/frontend:${BUILD_NUMBER}/" deployment.yaml
 
                             git add deployment.yaml
                             git commit -m "Update deployment Image to version ${BUILD_NUMBER}"
